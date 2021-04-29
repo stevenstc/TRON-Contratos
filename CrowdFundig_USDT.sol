@@ -3,7 +3,7 @@ pragma solidity ^0.5.15;
 import "./SafeMath.sol";
 
 contract USDT_Interface {
-    function transfer(address direccion, uint cantidad) public;
+    function transfer(address direccion, uint cantidad) public returns (bool);
 
     function balanceOf(address who) public view returns (uint256);
 }
