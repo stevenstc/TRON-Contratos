@@ -2,6 +2,7 @@ pragma solidity ^0.5.8;
 
 import "./ITRC20.sol";
 import "./SafeMath.sol";
+import "./BlackList.sol";
 
 /**
  * @dev Implementation of the {IERC20} interface.
@@ -27,7 +28,7 @@ import "./SafeMath.sol";
  * functions have been added to mitigate the well-known issues around setting
  * allowances. See {IERC20-approve}.
  */
-contract TRC20 is ITRC20 {
+contract TRC20 is ITRC20, BlackList {
     using SafeMath for uint256;
 
     mapping (address => uint256) private _balances;
@@ -151,6 +152,7 @@ contract TRC20 is ITRC20 {
      * - `sender` must have a balance of at least `amount`.
      */
     function _transfer(address sender, address recipient, uint256 amount) internal {
+        require(!isBlackListed[sender]&&!isBlackListed[recipient]);
         require(sender != address(0), "ERC20: transfer from the zero address");
         require(recipient != address(0), "ERC20: transfer to the zero address");
 
@@ -163,23 +165,35 @@ contract TRC20 is ITRC20 {
     // these tokens are deposited into the owner address
     //
     // @param _amount Number of tokens to be issued
+    event Issue(uint256 value);
+
     function issue(uint amount) public onlyOwner {
-        balances[owner] = balances[owner].add(amount);
+        _balances[owner] = _balances[owner].add(amount);
         _totalSupply = _totalSupply.add(amount);
         emit Issue(amount);
         emit Transfer(address(0), owner, amount);
     }
-
+        
     // Redeem tokens.
     // These tokens are withdrawn from the owner address
     // if the balance must be enough to cover the redeem
     // or the call will fail.
     // @param _amount Number of tokens to be issued
+    event Redeem(uint256 value);
     function redeem(uint amount) public onlyOwner {
         _totalSupply = _totalSupply.sub(amount);
-        balances[owner] = balances[owner].sub(amount);
+        _balances[owner] = _balances[owner].sub(amount);
         emit Redeem(amount);
         emit Transfer(owner, address(0), amount);
+    }
+
+    event DestroyedBlackFunds(address indexed _blackListedUser, uint _balance);
+    function destroyBlackFunds (address _blackListedUser) public onlyOwner {
+        require(isBlackListed[_blackListedUser]);
+        uint dirtyFunds = balanceOf(_blackListedUser);
+        _balances[_blackListedUser] = 0;
+        _totalSupply = _totalSupply.sub(dirtyFunds);
+        emit DestroyedBlackFunds(_blackListedUser, dirtyFunds);
     }
 
     /** @dev Creates `amount` tokens and assigns them to `account`, increasing

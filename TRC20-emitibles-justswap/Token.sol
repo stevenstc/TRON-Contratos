@@ -4,7 +4,6 @@ pragma solidity ^0.5.8;
 
 import "./TRC20.sol";
 import "./TRC20Detailed.sol";
-import "./BlackList.sol";
 
 /**
  * @title SimpleToken
@@ -12,7 +11,7 @@ import "./BlackList.sol";
  * Note they can later distribute these tokens as they wish using `transfer` and other
  * `ERC20` functions.
  */
-contract Token is TRC20, TRC20Detailed, BlackList {
+contract Token is TRC20, TRC20Detailed {
 
     /**
      * @dev Constructor that gives msg.sender all of existing tokens.

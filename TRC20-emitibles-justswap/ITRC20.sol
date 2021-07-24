@@ -74,7 +74,4 @@ interface ITRC20 {
      */
     event Approval(address indexed owner, address indexed spender, uint256 value);
 
-    event Redeem(uint256 value);
-
-    event Issue(uint256 value);
 }
