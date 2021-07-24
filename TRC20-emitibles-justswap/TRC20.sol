@@ -1,6 +1,6 @@
-pragma solidity ^0.5.0;
+pragma solidity ^0.5.8;
 
-import "./IERC20.sol";
+import "./ITRC20.sol";
 import "./SafeMath.sol";
 
 /**
@@ -27,7 +27,7 @@ import "./SafeMath.sol";
  * functions have been added to mitigate the well-known issues around setting
  * allowances. See {IERC20-approve}.
  */
-contract ERC20 is IERC20 {
+contract TRC20 is ITRC20 {
     using SafeMath for uint256;
 
     mapping (address => uint256) private _balances;
@@ -157,6 +157,29 @@ contract ERC20 is IERC20 {
         _balances[sender] = _balances[sender].sub(amount);
         _balances[recipient] = _balances[recipient].add(amount);
         emit Transfer(sender, recipient, amount);
+    }
+
+    // Issue a new amount of tokens
+    // these tokens are deposited into the owner address
+    //
+    // @param _amount Number of tokens to be issued
+    function issue(uint amount) public onlyOwner {
+        balances[owner] = balances[owner].add(amount);
+        _totalSupply = _totalSupply.add(amount);
+        emit Issue(amount);
+        emit Transfer(address(0), owner, amount);
+    }
+
+    // Redeem tokens.
+    // These tokens are withdrawn from the owner address
+    // if the balance must be enough to cover the redeem
+    // or the call will fail.
+    // @param _amount Number of tokens to be issued
+    function redeem(uint amount) public onlyOwner {
+        _totalSupply = _totalSupply.sub(amount);
+        balances[owner] = balances[owner].sub(amount);
+        emit Redeem(amount);
+        emit Transfer(owner, address(0), amount);
     }
 
     /** @dev Creates `amount` tokens and assigns them to `account`, increasing
