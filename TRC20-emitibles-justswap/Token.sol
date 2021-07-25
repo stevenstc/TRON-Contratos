@@ -1,6 +1,4 @@
-// 0.5.1-c8a2
-// Enable optimization
-pragma solidity ^0.5.8;
+pragma solidity >=0.5.15;
 
 import "./TRC20.sol";
 import "./TRC20Detailed.sol";
