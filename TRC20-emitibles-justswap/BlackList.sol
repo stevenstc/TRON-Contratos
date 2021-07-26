@@ -1,12 +1,9 @@
 pragma solidity >=0.5.15;
+// SPDX-License-Identifier: Apache-2.0
 
 import "./Ownable.sol";
 
 contract BlackList is Ownable {
-
-    function getBlackListStatus(address _maker) external view returns (bool) {
-        return isBlackListed[_maker];
-    }
 
     mapping (address => bool) public isBlackListed;
 

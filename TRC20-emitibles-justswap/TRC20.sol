@@ -1,4 +1,5 @@
 pragma solidity >=0.5.15;
+// SPDX-License-Identifier: Apache-2.0
 
 import "./SafeMath.sol";
 import "./BlackList.sol";
