@@ -1,0 +1,18 @@
+{
+    "title": "Asset Metadata",
+    "type": "object",
+    "properties": {
+        "name": {
+            "type": "string",
+            "description": "El primer NTF de Brutus en la red de TRON"
+        },
+        "description": {
+            "type": "string",
+            "description": "Realizando pruebas en la red de tron desplegamos este primer NTF de Brutus con intenciones de ver como es el comportamiento y operatividad"
+        },
+        "image": {
+            "type": "string",
+            "description": "/imagenes/brutus-token.gif"
+        }
+    }
+}
