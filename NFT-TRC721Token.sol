@@ -1,4 +1,4 @@
-pragma solidity ^0.5.15;
+pragma solidity >=0.5.15;
 
 /**
  * @dev Wrappers over Solidity's arithmetic operations with added overflow
@@ -168,11 +168,11 @@ library SafeMath {
 contract Context {
     // Empty internal constructor, to prevent people from mistakenly deploying
     // an instance of this contract, which should be used via inheritance.
-    constructor () internal { }
+    constructor () { }
     // solhint-disable-previous-line no-empty-blocks
 
     function _msgSender() internal view returns (address payable) {
-        return msg.sender;
+        return payable(msg.sender);
     }
 
     function _msgData() internal view returns (bytes memory) {
@@ -215,7 +215,6 @@ library Roles {
         return role.bearer[account];
     }
 }
-pragma solidity ^0.5.15;
 
 /**
  * @dev Collection of functions related to the address type
@@ -228,7 +227,7 @@ library Address {
      * _Available since v2.4.0._
      */
     function toPayable(address account) internal pure returns (address payable) {
-        return address(uint160(account));
+        return payable(account);
     }
 
     /**
