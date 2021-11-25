@@ -1,4 +1,4 @@
-pragma solidity >=0.8.0;
+pragma solidity >=0.8.6;
 
 // SPDX-License-Identifier: Apache 2.0 
 
@@ -57,17 +57,14 @@ library SafeMath {
 }
 
 contract Context {
-    // Empty internal constructor, to prevent people from mistakenly deploying
-    // an instance of this contract, which should be used via inheritance.
     constructor () { }
-    // solhint-disable-previous-line no-empty-blocks
 
     function _msgSender() internal view returns (address payable) {
         return payable(msg.sender);
     }
 
     function _msgData() internal view returns (bytes memory) {
-        this; // silence state mutability warning without generating bytecode - see https://github.com/ethereum/solidity/issues/2691
+        this;
         return msg.data;
     }
 }
@@ -174,12 +171,8 @@ interface ITRC165 {
     function supportsInterface(bytes4 interfaceId) external view returns (bool);
 }
 
-
 interface ITRC721 is ITRC165 {
-    event Transfer(address indexed from, address indexed to, uint256 indexed tokenId);
-    event Approval(address indexed owner, address indexed approved, uint256 indexed tokenId);
-    event ApprovalForAll(address indexed owner, address indexed operator, bool approved);
-
+    
     function balanceOf(address owner) external view returns (uint256 balance);
     function ownerOf(uint256 tokenId) external view returns (address owner);
     function safeTransferFrom(address from, address to, uint256 tokenId) external;
@@ -194,7 +187,7 @@ interface ITRC721 is ITRC165 {
 }
 
 
-interface ITRC721Metadata is ITRC721 {
+interface ITRC721Metadata {
     function name() external view returns (string memory);
     function symbol() external view returns (string memory);
     function tokenURI(uint256 tokenId) external view returns (string memory);
@@ -206,7 +199,7 @@ interface ITRC721Receiver {
 }
 
 
-contract TRC165 is ITRC165 {
+contract TRC165 {
     /*
      * bytes4(keccak256('supportsInterface(bytes4)')) == 0x01ffc9a7
      */
@@ -238,7 +231,11 @@ contract TRC165 is ITRC165 {
     }
 }
 
-contract TRC721 is Context, TRC165, ITRC721 {
+contract TRC721 is Context, TRC165 {
+    event Transfer(address indexed from, address indexed to, uint256 indexed tokenId);
+    event Approval(address indexed owner, address indexed approved, uint256 indexed tokenId);
+    event ApprovalForAll(address indexed owner, address indexed operator, bool approved);
+
     using SafeMath for uint256;
     using Address for address;
     using Counters for Counters.Counter;
@@ -338,50 +335,16 @@ contract TRC721 is Context, TRC165, ITRC721 {
         _transferFrom(from, to, tokenId);
     }
 
-    /**
-     * @dev Safely transfers the ownership of a given token ID to another address
-     * If the target address is a contract, it must implement {ITRC721Receiver-onTRC721Received},
-     * which is called upon a safe transfer, and return the magic value
-     * `bytes4(keccak256("onTRC721Received(address,address,uint256,bytes)"))`; otherwise,
-     * the transfer is reverted.
-     * Requires the msg.sender to be the owner, approved, or operator
-     * @param from current owner of the token
-     * @param to address to receive the ownership of the given token ID
-     * @param tokenId uint256 ID of the token to be transferred
-     */
     function safeTransferFrom(address from, address to, uint256 tokenId) public {
         safeTransferFrom(from, to, tokenId, "");
     }
 
-    /**
-     * @dev Safely transfers the ownership of a given token ID to another address
-     * If the target address is a contract, it must implement {ITRC721Receiver-onTRC721Received},
-     * which is called upon a safe transfer, and return the magic value
-     * `bytes4(keccak256("onTRC721Received(address,address,uint256,bytes)"))`; otherwise,
-     * the transfer is reverted.
-     * Requires the _msgSender() to be the owner, approved, or operator
-     * @param from current owner of the token
-     * @param to address to receive the ownership of the given token ID
-     * @param tokenId uint256 ID of the token to be transferred
-     * @param _data bytes data to send along with a safe transfer check
-     */
+
     function safeTransferFrom(address from, address to, uint256 tokenId, bytes memory _data) public {
         require(_isApprovedOrOwner(_msgSender(), tokenId), "TRC721: transfer caller is not owner nor approved");
         _safeTransferFrom(from, to, tokenId, _data);
     }
 
-    /**
-     * @dev Safely transfers the ownership of a given token ID to another address
-     * If the target address is a contract, it must implement `onTRC721Received`,
-     * which is called upon a safe transfer, and return the magic value
-     * `bytes4(keccak256("onTRC721Received(address,address,uint256,bytes)"))`; otherwise,
-     * the transfer is reverted.
-     * Requires the msg.sender to be the owner, approved, or operator
-     * @param from current owner of the token
-     * @param to address to receive the ownership of the given token ID
-     * @param tokenId uint256 ID of the token to be transferred
-     * @param _data bytes data to send along with a safe transfer check
-     */
     function _safeTransferFrom(address from, address to, uint256 tokenId, bytes memory _data) internal {
         _transferFrom(from, to, tokenId);
         require(_checkOnTRC721Received(from, to, tokenId, _data), "TRC721: transfer to non TRC721Receiver implementer");
@@ -420,13 +383,6 @@ contract TRC721 is Context, TRC165, ITRC721 {
         emit Transfer(address(0), to, tokenId);
     }
 
-    /**
-     * @dev Internal function to burn a specific token.
-     * Reverts if the token does not exist.
-     * Deprecated, use {_burn} instead.
-     * @param owner owner of the token to burn
-     * @param tokenId uint256 ID of the token being burned
-     */
     function _burn(address owner, uint256 tokenId) internal virtual{
         require(ownerOf(tokenId) == owner, "TRC721: burn of token that is not own");
 
@@ -438,22 +394,10 @@ contract TRC721 is Context, TRC165, ITRC721 {
         emit Transfer(owner, address(0), tokenId);
     }
 
-    /**
-     * @dev Internal function to burn a specific token.
-     * Reverts if the token does not exist.
-     * @param tokenId uint256 ID of the token being burned
-     */
     function _burn(uint256 tokenId) internal {
         _burn(ownerOf(tokenId), tokenId);
     }
 
-    /**
-     * @dev Internal function to transfer ownership of a given token ID to another address.
-     * As opposed to {transferFrom}, this imposes no restrictions on msg.sender.
-     * @param from current owner of the token
-     * @param to address to receive the ownership of the given token ID
-     * @param tokenId uint256 ID of the token to be transferred
-     */
     function _transferFrom(address from, address to, uint256 tokenId) internal virtual{
         require(ownerOf(tokenId) == from, "TRC721: transfer of token that is not own");
         require(to != address(0), "TRC721: transfer to the zero address");
@@ -509,10 +453,6 @@ contract TRC721 is Context, TRC165, ITRC721 {
         }
     }
 
-    /**
-     * @dev Private function to clear current approval of a given token ID.
-     * @param tokenId uint256 ID of the token to be transferred
-     */
     function _clearApproval(uint256 tokenId) private {
         if (_tokenApprovals[tokenId] != address(0)) {
             _tokenApprovals[tokenId] = address(0);
@@ -521,7 +461,7 @@ contract TRC721 is Context, TRC165, ITRC721 {
 }
 
 
-contract TRC721Metadata is Context, TRC165, TRC721, ITRC721Metadata, MinterRole {
+contract TRC721Metadata is Context, TRC721, MinterRole {
 
     string private _name;
     string private _symbol;
@@ -538,9 +478,7 @@ contract TRC721Metadata is Context, TRC165, TRC721, ITRC721Metadata, MinterRole 
      */
     bytes4 private constant _INTERFACE_ID_TRC721_METADATA = 0x5b5e139f;
 
-    /**
-     * @dev Constructor function
-     */
+
     constructor (string memory name2, string memory symbol2) {
         _name = name2;
         _symbol = symbol2;
@@ -549,30 +487,15 @@ contract TRC721Metadata is Context, TRC165, TRC721, ITRC721Metadata, MinterRole 
         _registerInterface(_INTERFACE_ID_TRC721_METADATA);
     }
 
-    /**
-     * @dev Gets the token name.
-     * @return string representing the token name
-     */
     function name() external view returns (string memory) {
         return _name;
     }
 
-    /**
-     * @dev Gets the token symbol.
-     * @return string representing the token symbol
-     */
+
     function symbol() external view returns (string memory) {
         return _symbol;
     }
 
-    /**
-     * @dev Returns the URI for a given token ID. May return an empty string.
-     *
-     * If the token's URI is non-empty and a base URI was set (via
-     * {_setBaseURI}), it will be added to the token ID's URI as a prefix.
-     *
-     * Reverts if the token ID does not exist.
-     */
     function tokenURI(uint256 tokenId) external view returns (string memory) {
         require(_exists(tokenId), "TRC721Metadata: URI query for nonexistent token");
 
@@ -587,15 +510,7 @@ contract TRC721Metadata is Context, TRC165, TRC721, ITRC721Metadata, MinterRole 
         }
     }
 
-    /**
-     * @dev Internal function to set the token URI for a given token.
-     *
-     * Reverts if the token ID does not exist.
-     *
-     * TIP: if all token IDs share a prefix (e.g. if your URIs look like
-     * `http://api.myproject.com/token/<id>`), use {_setBaseURI} to store
-     * it and save gas.
-     */
+    
     function _setTokenURI(uint256 tokenId, string memory _tokenURI) internal {
         require(_exists(tokenId), "TRC721Metadata: URI set of nonexistent token");
         _tokenURIs[tokenId] = _tokenURI;
@@ -614,14 +529,7 @@ contract TRC721Metadata is Context, TRC165, TRC721, ITRC721Metadata, MinterRole 
         return _baseURI;
     }
 
-    /**
-     * @dev Internal function to burn a specific token.
-     * Reverts if the token does not exist.
-     * Deprecated, use _burn(uint256) instead.
-     * @param owner owner of the token to burn
-     * @param tokenId uint256 ID of the token being burned by the msg.sender
-     
-    function _burn(address owner, uint256 tokenId) internal {
+    function _delete(address owner, uint256 tokenId) internal {
         super._burn(owner, tokenId);
 
         // Clear metadata (if any)
@@ -629,15 +537,8 @@ contract TRC721Metadata is Context, TRC165, TRC721, ITRC721Metadata, MinterRole 
             delete _tokenURIs[tokenId];
         }
     }
-    */
 }
 
-
-
-/**
- * @title TRC721MetadataMintable
- * @dev TRC721 minting logic with metadata.
- */
 abstract contract TRC721MetadataMintable is TRC721, TRC721Metadata {
 
     constructor () {}
@@ -649,11 +550,6 @@ abstract contract TRC721MetadataMintable is TRC721, TRC721Metadata {
     }
 }
 
-
-/**
- * @title TRC721Mintable
- * @dev TRC721 minting logic.
- */
 contract TRC721Mintable is TRC721, MinterRole {
 
     function mint(address to, uint256 tokenId) public onlyMinter returns (bool) {
@@ -674,9 +570,6 @@ contract TRC721Mintable is TRC721, MinterRole {
     }
 }
 
-/**
- * @title TRC-721 Non-Fungible Token Standard, optional enumeration extension
- */
 interface ITRC721Enumerable is ITRC721 {
     function totalSupply() external view returns (uint256);
     function tokenOfOwnerByIndex(address owner, uint256 index) external view returns (uint256 tokenId);

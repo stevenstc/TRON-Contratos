@@ -488,13 +488,11 @@ contract TRC721Metadata is Context, TRC165, TRC721, ITRC721Metadata {
         }
     }
 
-
     function _setTokenURI(uint256 tokenId, string memory _tokenURI) internal {
         require(_exists(tokenId), "TRC721Metadata: URI set of nonexistent token");
         _tokenURIs[tokenId] = _tokenURI;
     }
 
- 
     function _setBaseURI(string memory baseURI) internal {
         _baseURI = baseURI;
     }
@@ -678,7 +676,7 @@ contract TRC721Enumerable is Context, TRC165, TRC721, ITRC721Enumerable {
 
 
 contract TRC721Token is TRC721, TRC721Enumerable, TRC721MetadataMintable {
-    constructor() public TRC721Metadata("Brutus Gallery", "BRGY", "https://mintearte.tk/") {
+    constructor() public TRC721Metadata("Brutus Gallery 2", "BRGY2", "https://mintearte.tk/") {
 
     }
 }
